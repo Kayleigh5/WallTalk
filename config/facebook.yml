@@ -1,3 +1,7 @@
 development:
-  app_id: 1621980074680557
+  app_id: 1623719641173267
+  secret: 9b3674fff7b4fa0690d42b56e6f07eda
+
+production:
+  app_id: 1623719641173267
   secret: 9b3674fff7b4fa0690d42b56e6f07eda

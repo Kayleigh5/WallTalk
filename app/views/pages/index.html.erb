@@ -1,13 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Connectinggenerations</title>
-  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
-  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
-  <%= csrf_meta_tags %>
-</head>
-<body>
-
 <p>Step 1: Create an account for your grandmother/grandfather on Facebook <a href="http://www.facebook.com" target="_blank">www.facebook.com</a></p>
 
 
@@ -22,8 +12,3 @@
 		<%= link_to "Register for application", "/auth/facebook", id: "sign_in_grandkids" %>
 	<% end %>
 </div>
-
-<%= yield %>
-
-</body>
-</html>

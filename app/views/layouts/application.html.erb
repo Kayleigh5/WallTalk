@@ -8,21 +8,6 @@
 </head>
 <body>
 
-<p>Step 1: Create an account for your grandmother/grandfather on Facebook <a href="http://www.facebook.com" target="_blank">www.facebook.com</a></p>
-
-
-<p>Step 2: Each grandkid should register for the application.</p>
-
-<div id="grandkids-authentication">
-	<% if current_user %>
-		Registered <strong><%= current_user.name %></strong>!
-		Want to register another user?
-		<%= link_to "Register for application", "/auth/facebook", id: "sign_in_grandkids" %>
-	<% else %>
-		<%= link_to "Register for application", "/auth/facebook", id: "sign_in_grandkids" %>
-	<% end %>
-</div>
-
 <%= yield %>
 
 </body>

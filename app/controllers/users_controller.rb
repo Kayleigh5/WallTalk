@@ -1,7 +1,9 @@
 class UsersController < ApplicationController
 
-  def create
-  	@user = User.from_omniauth(env["omniauth.auth"])
+  def index
+  end
+
+  def login
   end
 
 end

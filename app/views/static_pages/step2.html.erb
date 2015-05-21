@@ -1,2 +1,13 @@
-<h1>StaticPages#step2</h1>
-<p>Find me in app/views/static_pages/step2.html.erb</p>
+<h1>Step 2: Each grandkid should register for the application.</h1>
+
+<div id="grandkids-authentication">
+	<% if current_user %>
+		Registered <strong><%= current_user.name %></strong>!
+		Want to register another grandkid?
+		<%= link_to "Register for application", '/signout', id: "sign_out" %>
+	<% else %>
+		<%= link_to "Register for application", '/signout', id: "sign_out" %>
+	<% end %>
+</div>
+
+<%= link_to "Next page", "step3" %>

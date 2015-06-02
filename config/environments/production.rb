@@ -3,6 +3,7 @@ Rails.application.configure do
 
   # Code is not reloaded between requests.
   config.cache_classes = true
+  config.use_ssl = true
 
   # Eager load code on boot. This eager loads most of Rails and
   # your application in memory, allowing both threaded web servers
@@ -34,6 +35,9 @@ Rails.application.configure do
   # Asset digests allow you to set far-future HTTP expiration dates on all assets,
   # yet still be able to expire them through the digest params.
   config.assets.digest = true
+
+  config.assets.enabled = true
+  config.assets.paths << Rails.root.join('/app/assets/fonts')
 
   # `config.assets.precompile` and `config.assets.version` have moved to config/initializers/assets.rb
 

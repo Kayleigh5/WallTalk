@@ -6,10 +6,12 @@ Rails.application.routes.draw do
   get 'static_pages/step3'
 
   get 'friends/index'
+  get 'friends/refresh_part'
   post 'friends/like_message'
+  get 'friends/like_part'
+  get 'friends/comment_part'
   resources :friends
   root to: 'static_pages#home'
-  match "auth/facebook/subscription", :controller => :realtime_updates, :action => :subscription, :as => 'facebook_subscription', :via => [:get,:post]
   match 'auth/facebook/callback', to: 'sessions#create', via: [:get]
   match 'auth/failure', to: redirect('/'), via: [:get]
   match 'signout', to: 'sessions#destroy', via: [:get]

@@ -11,8 +11,13 @@ gem 'jbuilder', '~> 2.0'
 gem 'sdoc', '~> 0.4.0', group: :doc
 gem 'omniauth-facebook'
 gem 'koala', '~> 2.0'
+gem 'thin'
 group :development, :test do
-  # Call 'byebug' anywhere in the code to stop execution and get a debugger console
+	gem 'rb-fsevent', '>= 0.9.1'
+	gem 'rails-dev-tweaks', '~> 1.1'
+gem 'rails-dev-boost', :git => 'git://github.com/thedarkone/rails-dev-boost.git'
+
+  # Call 'byebug' anywhere , '~1.6.3'in the code to stop execution and get a debugger console
   gem 'byebug'
 
   # Access an IRB console on exception pages or by using <%= console %> in views

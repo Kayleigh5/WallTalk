@@ -1,3 +1,5 @@
+//= depend_on_asset "background.jpg"
+
 .static_pages {
  	margin: 0 auto;
  	overflow-x: hidden !important;
@@ -18,7 +20,7 @@
 }
 
 .static_pages #head-image {
-	background: url("background.jpg");
+	background-image: url("background.jpg");
 	height: 70vh;
 }
 

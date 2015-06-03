@@ -18,7 +18,7 @@
 }
 
 .static_pages #head-image {
-	background-image: "<%= asset_path('background.jpg') %>";
+	background-image: image-url("<%= asset_path('background.jpg') %>");
 	height: 70vh;
 }
 

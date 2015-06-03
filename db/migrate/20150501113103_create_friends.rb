@@ -1,8 +1,8 @@
 class CreateFriends < ActiveRecord::Migration
   def change
-    create_table :friends do |t|
+    #create_table :friends do |t|
 
-      t.timestamps null: false
+     # t.timestamps null: false
     end
   end
 end

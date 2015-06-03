@@ -1,4 +1,4 @@
-Rails.application.configure do
+Congen.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.
@@ -38,7 +38,7 @@ Rails.application.configure do
 
   config.assets.enabled = true
   config.assets.paths << Rails.root.join('/app/assets/fonts')
-
+  config.assets.precompile += %w(*.png *.jpg *.jpeg *.gif)
   # `config.assets.precompile` and `config.assets.version` have moved to config/initializers/assets.rb
 
   # Specifies the header that your server uses for sending files.

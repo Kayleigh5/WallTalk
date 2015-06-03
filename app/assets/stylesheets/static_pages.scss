@@ -5,12 +5,12 @@
 
 @font-face {
     font-family: NHaasBold;
-    src: font-url('/assets/NHaasBold.ttf');
+    src: url('/assets/NHaasBold.ttf');
 }
 
 @font-face {
     font-family: NHaasLight;
-    src: font-url('/assets/NHaasLight.ttf');
+    src: url('/assets/NHaasLight.ttf');
 }
 
 .alert {

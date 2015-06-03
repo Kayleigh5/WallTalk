@@ -1,6 +1,6 @@
 class Friends < ActiveRecord::Migration
   def change
-  	drop_table :friends
+  	#drop_table :friends
   	create_table :friends do |t|
   		t.belongs_to :user, index: true
   		t.string :uid

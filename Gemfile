@@ -12,6 +12,7 @@ gem 'sdoc', '~> 0.4.0', group: :doc
 gem 'omniauth-facebook'
 gem 'koala', '~> 2.0'
 gem 'thin'
+gem 'rails_12factor'
 group :development, :test do
 	gem 'rb-fsevent', '>= 0.9.1'
 	gem 'rails-dev-tweaks', '~> 1.1'

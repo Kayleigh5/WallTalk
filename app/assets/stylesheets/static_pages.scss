@@ -20,7 +20,7 @@
 }
 
 .static_pages #head-image {
-	background-image: url('<%= image_tag("background.jpg") %>');
+	background-image: image-url('background.jpg');
 	height: 70vh;
 }
 

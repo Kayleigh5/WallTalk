@@ -1,19 +1,18 @@
-<% @current_user.friends.each do |friend| %>
-	<p class="friend-name"><%= friend.name %></p>
-	
-	<% @content = determine_if_latest_picture_or_message("#{friend.uid}") %>
-	<% if @content[1].nil? %>
-		<p class="message-facebook"><%= @content[0] %></p>
-	<% else %>
-		<p class="message-facebook"><%= @content[0] %></p>
-		<% sentence = @content[1] %>
-		<% sentence.sub! '&', '&amp;' %>
-		<p class="picture-facebook" id="<% sentence %>"><%= sentence %></p>
+<% if current_user %>
+	<% @current_user.friends.each do |friend| %>
+		<p class="friend-name"><%= friend.name %></p>		
+		<% @content = determine_if_latest_picture_or_message("#{friend.uid}") %>
+		<% if @content[1].nil? %>
+			<p class="message-facebook"><%= @content[0] %></p>
+			<p class="picture-facebook"></p>
+		<% else %>
+			<p class="message-facebook"><%= @content[0] %></p>
+			<p class="picture-facebook"><%= @content[1] %></p>
+		<% end %>
 	<% end %>
 <% end %>
 
 <script>
-
 $(document).ready(function(){
 	numberOfGrandChildren = document.getElementById('num').innerHTML;
 	if (numberOfGrandChildren > 0){

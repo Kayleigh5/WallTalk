@@ -4,22 +4,19 @@ class SessionsController < ApplicationController
 		session[:fb_permissions] = 'user_events'
 		session[:user_id] = user.id
 		if request.env['omniauth.params']['user'] == 'grandkid'
-			redirect_to "/static_pages/step2"
+			redirect_to root_url(:signed_in_type => 'grandkid_sign', :current_user => current_user, anchor: 'grandkid')
 		elsif request.env['omniauth.params']['user'] == 'grandparent'
-			redirect_to "/static_pages/step3"
+			redirect_to '/friends/index'
 		end
 	end
 
-	def destroy
+	def destroy_grandkid
 		session[:user_id] = nil
-		if URI(request.referer).path == "/static_pages/step1"
-			redirect_to "/static_pages/step2"
-		elsif URI(request.referer).path == "/static_pages/step2"
-			redirect_to "/auth/facebook?user=grandkid"
-		elsif URI(request.referer).path == "/static_pages/step3"
-			redirect_to "/auth/facebook?user=grandparent"
-		else
-			redirect_to request.referer
-		end
+		redirect_to "/auth/facebook?user=grandkid"
+	end
+
+	def destroy_before_grandparent
+		session[:user_id] = nil
+		redirect_to "/auth/facebook?user=grandparent"
 	end
 end

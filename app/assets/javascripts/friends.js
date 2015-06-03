@@ -1,21 +1,16 @@
 
 // ********* PROJECTION CODE ****************** \\
 
-var colors = ["AliceBlue","Aqua","Aquamarine","Azure","Beige","Bisque","BlanchedAlmond","Blue","BlueViolet","Brown","BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue","Cornsilk","Crimson","Cyan","DeepPink","DeepSkyBlue","DimGray","DodgerBlue","FireBrick","ForestGreen","Fuchsia","Gainsboro","Gold","GoldenRod","Gray","Green","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory","Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","Lime", "Linen","Magenta","Maroon","MediumAquaMarine","MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue","MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream","MistyRose","Moccasin","NavajoWhite","Navy","OldLace","Olive","OliveDrab","Orange","OrangeRed","Orchid","PaleGoldenRod","PaleGreen","PaleTurquoise","PaleVioletRed","PapayaWhip","PeachPuff","Peru","Pink","Plum","PowderBlue","Purple","RebeccaPurple","Red","RosyBrown","RoyalBlue","SaddleBrown","Salmon","SandyBrown","SeaGreen","SeaShell","Sienna","Silver","SkyBlue","SlateBlue","SlateGray","Snow","SpringGreen","SteelBlue","Tan","Teal","Thistle","Tomato","Turquoise","Violet","Wheat","White","WhiteSmoke","Yellow","YellowGreen"];
 var numberOfGrandChildren = 0;
 var saved = false; //save wall initialization
 var allowFacebook = false; //to allow facebook messages to come in
 var globalFrameIDNewMessage = "";
-var globalFrameIDNewPicture = "";
 var globalNewMessage = "";
-var globalNewPicture = "";
 var oldMessage = [];
-var oldPicture = [];
 var timesDivInserted = 0;
-var timesHeightAdjusted = 0;
-var randomPictures = ["http://dreamatico.com/data_images/kitten/kitten-6.jpg", "https://fbcdn-sphotos-c-a.akamaihd.net/hphotos-ak-xft1/v/t1.0-9/10660283_865921100147683_8777487066525882489_n.jpg?oh=0fa6e12d9d303c83e43156efa4486a22&oe=55F165D3&__gda__=1438981977_48d0a01d9413501113336d4ba2839d97" , "https://scontent.xx.fbcdn.net/hphotos-xpa1/v/t1.0-9/11295583_852036748221841_2790802351986496979_n.jpg?oh=6659b82bfb7180a5fc5f17167ba29ee1&oe=55FAACE3" , "https://fbcdn-sphotos-c-a.akamaihd.net/hphotos-ak-xft1/v/t1.0-9/11062808_851959018204108_5194172977501782794_n.jpg?oh=9c49b86f75cda4e5bca51f0502906d4a&oe=55FD7E0D&__gda__=1442976903_14d7142af05b18498b51f4daae093182"];
-
-
+var timesMessageAdjusted = 0;
+var timesPictureAdjusted = 0;
+var messageIndex = 0;
 
 function begin(){
     if(timesDivInserted == 0){
@@ -40,27 +35,16 @@ Array.prototype.remove = function() {
 
 function insertDiv(){
     for(i=0; i<numberOfGrandChildren; i++){
-        var randomName = document.getElementsByClassName('friend-name')[i].innerHTML;
-        var message = document.getElementsByClassName('message-facebook')[i].innerHTML;
-        console.log(randomName + " : " + message);
+        var name = document.getElementsByClassName('friend-name')[i].innerHTML;
 
-        var divHTML = "<div class='photoFrame' id='photoFrame" + i + "'><p class = 'name'>"+randomName+"</p><div class='slider'></div></div>";
+        var divHTML = "<div class='photoFrame' id='photoFrame" + i + "'><p class = 'name'>"+name+"</p><div class='slider'></div></div>";
         $(divHTML).insertAfter("#initializeDiv");
-
-        var divID = "#photoFrame" + i;
-        var randomIndex = Math.floor(Math.random() * colors.length);
-        var randomColor = colors[randomIndex];      
-        colors.remove(randomColor);
-        var colorString = randomColor + " solid 5px";       
-        $(divID).css({"border": colorString});
     }
 
     $( ".slider" ).slider();
     $('.slider').on( "slide", function( event, ui ) {
         var value = ui.value;
-        $(this).parent().animate({
-            borderWidth: value
-        }, 1);   
+        $(this).parent().css('border-width', value); 
     });
     
     $("#initializeDiv").remove();
@@ -72,7 +56,6 @@ function insertDiv(){
         }
     });
     cursorGrab(".photoFrame");
-
 
 }
 
@@ -95,18 +78,14 @@ function returnInitializers(){
 }
  
 function showSaved(){
-
-    $("<p class='saved'>SAVED</p>").insertAfter("#photoFrame0");
-    $( ".saved" ).animate({"opacity" : "1" }, "slow");
-    $( ".saved" ).animate({"opacity" : "0" }, "slow ", function() {
-       $(".saved").remove();
-       allowFacebook = true;
-       saved = true;
-       $( ".photoFrame" ).draggable('disable');
-       cursorNormal(".photoFrame");
-       fadeOutInitializers();
-    });
+    allowFacebook = true;
+    saved = true;
+    $( ".photoFrame" ).draggable('disable');
+    cursorNormal(".photoFrame");
+    fadeOutInitializers();
 }
+
+
 
 function overlaps(element1, element2){
 
@@ -153,7 +132,7 @@ function rightPlace(queryObjectID){
         //if i is not the id of this box
         if( $( '.messageContainer' )[i].id != $( queryObjectID ).attr("id") ){
             if( overlaps($( queryObjectID ) , $(queryMessageContainerID)) ){
-                //console.log('Overlaps with: ' + messageContainerSelector);
+                //console.log('Overlaps with: ' + queryMessageContainerID);
                 return false;
             }
         }               
@@ -172,6 +151,7 @@ function rightPlace(queryObjectID){
 
     //if out of window bounds, return false
     if(outOfWindow(queryObjectID)){
+        //console.log(queryObjectID + ' is out of window');
         return false;
     }   
     return true;        
@@ -193,24 +173,44 @@ function isEven(x) {
 }
 
 
-function adjustMessageBox(queryMessageContainerID, queryMessageID, queryMessageIDinside){
-    timesHeightAdjusted++;
-    if(isEven(timesHeightAdjusted)){
-        //console.log('even');
-        $(queryMessageContainerID).css('width', $(queryMessageContainerID).width()/1.1);
-        $(queryMessageID).css('width', $(queryMessageID).width()/1.1 - (distanceText-(distanceText/1.1)));
-        $(queryMessageIDinside).css('width', $(queryMessageID).width());
-        //@@NEW@@
-    } else {
-        //console.log('uneven');
-        $(queryMessageContainerID).css('height', $(queryMessageContainerID).height()/1.1);
-        $(queryMessageID).css('height', $(queryMessageID).height()/1.1 - (distanceText-(distanceText/1.1)));
-        //@@NEW@@       
+function adjustMessageBox(queryMessageContainerID, queryMessageID, queryMessageIDinside, widestWord){
+    timesMessageAdjusted++;
+    
+    if(!isEven(timesMessageAdjusted)){
+        console.log('uneven');
+        if(widestWord >= $(queryMessageIDinside).width()/1.1){
+            //the width may only become smaller if there is no word wider than the width (we don't want a sideway overflow)
+            //TODO: HIJ DOET HET NIET HELEMAAL GOED
+            $(queryMessageID).css('width', $(queryMessageID).width()/1.1);
+            $(queryMessageIDinside).css('width', $(queryMessageID).width());
+            $(queryMessageContainerID).css('width', $(queryMessageID).width()+ 2*distanceText);
+        } else {
+            timesMessageAdjusted++;
+        }
+    } 
+
+    if(isEven(timesMessageAdjusted)) {
+        console.log('even');  
+
+        $(queryMessageID).css('height', $(queryMessageID).height()/1.1);  
+        console.log('height: ' + $(queryMessageID).height());
+        console.log('fontheight: ' + parseInt($(queryMessageIDinside).css('font-size')));
+        if( $(queryMessageID).height() >= parseInt(  $(queryMessageIDinside).css('font-size')  ) *1.5){            
+            $(queryMessageContainerID).css('height',  $(queryMessageID).height() + 2*distanceText);
+        } else {
+            console.log('height too small');
+            //if the container is smaller than the size of the letters, it is unreadable
+            $(queryMessageID).css('height', parseInt($(queryMessageIDinside).css('font-size')) *1.5);
+            $(queryMessageContainerID).css('height', $(queryMessageID).height() + 2*distanceText);
+            $(queryMessageID).css('width',  $(queryMessageID).width()*2);
+            $(queryMessageIDinside).css('width', $(queryMessageID).width());
+        }
     }
     return "done";
 }
 
 function adjustPicture(queryPictureID){
+    timesPictureAdjusted++;
     $(queryPictureID).css('width', $(queryPictureID).width()/1.5);
     return "done";
 }
@@ -223,19 +223,15 @@ function animateOverflow(queryObjectID1, queryObjectID2){
         $(queryObjectID1).animate({ 
             marginTop: marginToAnimate
         }, animationSpeed, function() {
-            //console.log('Animated: ' + queryObjectID1 + 'with speed: ' + animationSpeed);
             animateOverflow(queryObjectID1, queryObjectID2);
         });
     }
-    
 }
 
-
 // distance from photoframe (needed for text cloud) 1 is always needed, then add another distance
-var distanceText = 20;
+var distanceText = 12;
 var distancePhotoFrame = 1 + 5;
 
-//@@NEW@@
 function tryPositions(photoFrameID, queryObjectID){
     //***try left top position
     var side = "leftTop";
@@ -243,6 +239,10 @@ function tryPositions(photoFrameID, queryObjectID){
     var marginLeft = $(photoFrameID).offset().left - $(queryObjectID).width()-distancePhotoFrame;   
     $(queryObjectID).css('margin-top', marginTop);
     $(queryObjectID).css('margin-left', marginLeft);
+
+    if(timesMessageAdjusted > 100 || timesPictureAdjusted > 100){
+        return "error";
+    }
 
     //make message container visible if it's in the right place, else try another position
     if(rightPlace(queryObjectID)){
@@ -257,7 +257,6 @@ function tryPositions(photoFrameID, queryObjectID){
         $(queryObjectID).css('margin-left', marginLeft);
         
         //make message container visible if it's in the right place, else try another position
-        //@@NEW@@
         if(rightPlace(queryObjectID)){
             $(queryObjectID).css('opacity', '1');
         } else {            
@@ -270,7 +269,6 @@ function tryPositions(photoFrameID, queryObjectID){
             $(queryObjectID).css('margin-left', marginLeft);
             
             //make message container visible if it's in the right place, else try another position
-            //@@NEW@@
             if(rightPlace(queryObjectID)){
                 $(queryObjectID).css('opacity', '1');
             } else {
@@ -283,22 +281,19 @@ function tryPositions(photoFrameID, queryObjectID){
                 $(queryObjectID).css('margin-left', marginLeft);
                 
                 //make message container visible if it's in the right place, else try another size and positions
-                //@@NEW@@
                 if(rightPlace(queryObjectID)){
                     $(queryObjectID).css('opacity', '1');
                 } else {
-                    //@@NEW@@
                     side = "again";
                 }
             }
         }
     }
-    console.log("tryPos: " + side);
     return side;
 }
 
 function placeMessageBox(photoFrameID, message){
-    //console.log("place for the " + timesHeightAdjusted + " time");
+    //console.log("place for the " + timesMessageAdjusted + " time");
     // get a message and calculate size
     console.log('place message: ' + message);
     var messageSplit = message.split("");
@@ -315,7 +310,7 @@ function placeMessageBox(photoFrameID, message){
 
     var messageContainerPlaced = false; 
 
-    if(timesHeightAdjusted==0){
+    if(timesMessageAdjusted==0){
         //stop previous message animation
         $(queryMessageID).stop();
         //remove previous message container with this ID
@@ -336,122 +331,115 @@ function placeMessageBox(photoFrameID, message){
         //height of container div becomes height of text <p>
         var wordSplit = message.split(" ");
         var addWordLength = 0;
+        var widestWord = 0;
+        var thaword = "";
+        //TODO dit wordt opgeschoond zodra het werkt. Bij okeeeeeeeeee gaat het fout
 
         for(word = 0; word < wordSplit.length; word++){
             var widthOfWordInDom = getTextWidth(wordSplit[word], $('.messageInside').css('font-family'), $('.message').css('font-size'));
-            console.log('word: '+ wordSplit[word]);
-            console.log('message id inside width: ' + $(queryMessageIDinside).width());
-            console.log('length: '+ widthOfWordInDom);
+            //console.log('word: '+ wordSplit[word]);
+            //console.log('message id inside width: ' + $(queryMessageIDinside).width());
+            console.log('widthofwordindom: '+ widthOfWordInDom);
             
-            if(widthOfWordInDom > $(queryMessageIDinside).width()){
-                console.log(messageID + ' word is bigger');
-                addWordLength = widthOfWordInDom - $(queryMessageIDinside).width();
+            if(widthOfWordInDom > widestWord){
+                //console.log(messageID + ' word is bigger');
+                widestWord = widthOfWordInDom;
+                thaword = wordSplit[word];
             }
         }
+        console.log('widest word: ' + widestWord);
+        console.log('tha word: ' + widestWord);
 
-        console.log('addWordLength: ' + addWordLength);
+        if(widestWord > $(queryMessageIDinside).width() ){
+            addWordLength = widestWord - $(queryMessageIDinside).width();
+        }
+        
+        console.log('length of word "' + thaword + '" is: ' + widestWord);
+
+        //console.log('addWordLength: ' + addWordLength);
         $(queryMessageIDinside).css('width', $(queryMessageIDinside).width() + addWordLength);
         $(queryMessageID).css('width', $(queryMessageIDinside).width());
         $(queryMessageID).css('height', $(queryMessageIDinside).height());
         $(queryMessageContainerID).css('width', $(queryMessageID).width() + distanceText*2);
         $(queryMessageContainerID).css('height', $(queryMessageID).height() + distanceText*2);
+        $(queryMessageID).css('margin-top', distanceText);
+        $(queryMessageID).css('margin-left', distanceText);
 
     }
 
-    //@@NEW@@
     var side = tryPositions(photoFrameID, queryMessageContainerID);
-    console.log('side: ' + side );
-    console.log('timesHeightAdjusted: ' + timesHeightAdjusted);
+    //console.log('side: ' + side );
+    //console.log('timesMessageAdjusted: ' + timesMessageAdjusted);
 
     if(side == "again"){
-        var status = adjustMessageBox(queryMessageContainerID, queryMessageID, queryMessageIDinside);
-
+        var status = adjustMessageBox(queryMessageContainerID, queryMessageID, queryMessageIDinside, widestWord);
         if(status == 'done'){
             placeMessageBox(photoFrameID, message);
         }
-    } else if(typeof(side) == 'string' && timesHeightAdjusted > 0) {
-        $(queryMessageID).css('margin-top', distanceText);
-        $(queryMessageID).css('margin-left', distanceText);
+    } else if(typeof(side) == 'string' && timesMessageAdjusted > 0) {
         createBorder(queryMessageContainerID, side);
-        timesHeightAdjusted = 0;
+        timesMessageAdjusted = 0;
         animateOverflow(queryMessageIDinside, queryMessageID);
+    } else if(side == "error"){
+        timesMessageAdjusted = 0;
     } else{
-        $(queryMessageID).css('margin-top', distanceText);
-        $(queryMessageID).css('margin-left', distanceText);
         createBorder(queryMessageContainerID, side);
-        timesHeightAdjusted = 0;
+        timesMessageAdjusted = 0;
     }
 }
 
-var blinkSpeed = 4000;
-
 function animateBorder(photoFrameID) {        
-   //setTimeout(function () {   
-        $(photoFrameID).animate({
-            "border-color": "white"
-        }, blinkSpeed , function(){
-            $(photoFrameID).animate({
-            "border-color": "black"
-            }, blinkSpeed, function(){
-                if (globalFrameIDNewMessage == photoFrameID) {  
-                    animateBorder(photoFrameID);          
-                }
-            });
-        });     
-
-
-   //}, blinkSpeed/16);
+    $(".photoFrame").not(photoFrameID).css('-webkit-animation-iteration-count', '0');
+    $(photoFrameID).css('-webkit-animation-name', 'border');
+    $(photoFrameID).css('-webkit-animation-iteration-count', 'infinite');
 }
 
 
 function placePicture(photoFrameID, pictureLink){
     
+    //console.log("Placing picture on " + photoFrameID + "...");
     // message IDs (text)
     var pictureID = photoFrameID.replace("#", "") + "Picture";
     var queryPictureID = "#" + pictureID;
 
-    if(timesHeightAdjusted==0){
+    if(timesPictureAdjusted==0){
+        //console.log("...for the first time");
         //remove previous picture with this ID
         $(queryPictureID).remove();
-
         //insert new message container with width according to number of characters of message and font size
         var insertPictureContainerHTML = "<img class='picture' id='" + pictureID + "'/img>";
         $(insertPictureContainerHTML).insertAfter(photoFrameID);
         document.getElementById(pictureID).src = pictureLink;
-        var pictureRealWidth = 0;
-        var pictureRealHeight = 0;
         $(queryPictureID)
             .attr("src", document.getElementById(pictureID).src)
             .load(function(){
-               pictureRealWidth = this.width;
-               pictureRealHeight = this.height;
-               beginPlacing();
+                $(this).css('width', $(window).width()*0.15);
+                beginPlacing();
         });     
     } else {
         beginPlacing();
     }
 
     function beginPlacing(){
-        //deze functie nog buiten de andere functie?
+        //TODO deze functie nog buiten de andere functie?
+        //console.log('Begin place picture');
         var side = tryPositions(photoFrameID, queryPictureID);
 
+        //console.log('picture ' + side);
+
         if(side == "again"){
+
             var status = adjustPicture(queryPictureID);
             if(status == 'done'){
-                timesHeightAdjusted++;
                 placePicture(photoFrameID, pictureLink);
             }
         } else{
             createBorder(queryPictureID, side);
             $(queryPictureID).css('opacity', '1');
-            timesHeightAdjusted = 0;
+            timesPictureAdjusted = 0;
         }
     }   
-    
 }
-
-
-
 
 function createBorder(queryObjectID, side){
     if(side=="leftTop"){
@@ -479,55 +467,66 @@ function createBorder(queryObjectID, side){
     }
 }
 
-var newMessage = "";
-var x = 0;
-
 function checkNewMessage(){
     console.log('check');
+    var newMessage = "";
     var length = document.getElementsByClassName('message-facebook').length; 
-    if(x<length){
-        newMessage = document.getElementsByClassName('message-facebook')[x].innerHTML;
+    if(messageIndex<length){
+        newMessage = document.getElementsByClassName('message-facebook')[messageIndex].innerHTML;
         globalNewMessage = newMessage;
-        var frameID = "#photoFrame" + x;
-        //console.log('new: ' + newMessage);
-        //console.log('old: ' + oldMessage[x]);
-        if(!!newMessage.localeCompare(oldMessage[x]) || (oldMessage[x] == undefined) || (newMessage == "")){
-            //if different then place and animate
-            //console.log('different');
-            //console.log('match: ' + newMessage.match(oldMessage[x]));
-            //console.log('undefined: ' + (oldMessage[x] == undefined));
-            globalFrameIDNewMessage = frameID;
-            animateBorder(frameID);
-            oldMessage[x] = newMessage;
-            checkNewPicture(frameID, x);
-            x++;
-            placeMessageBox(frameID, newMessage); 
+        var photoFrameID = "#photoFrame" + messageIndex;
+        if(!!newMessage.localeCompare(oldMessage[messageIndex]) || (oldMessage[messageIndex] == undefined) || (newMessage == "")){
+            //if different or empty then place and animate
+            globalFrameIDNewMessage = photoFrameID;
+            animateBorder(photoFrameID);
+            oldMessage[messageIndex] = newMessage;            
+            messageIndex++;
+            if(newMessage != "" ){
+                placeMessageBox(photoFrameID, newMessage); 
+            } else {
+                var queryMessageBoxID = photoFrameID + 'messageContainer';
+                $(queryMessageBoxID).remove();
+            }
+            checkNewPicture(photoFrameID);
         } else if(!saved){
-            //enable placeMessage box in unsaved mode so that the message moves with the photoframe
-            checkNewPicture(frameID, x);
-            x++;
-            placeMessageBox(frameID, newMessage); 
+            //enable placeMessage box in unsaved mode so that the message moves with the photoframe            
+            messageIndex++;
+            placeMessageBox(photoFrameID, newMessage); 
+            checkNewPicture(photoFrameID);
         } else {
             //check another new message
-            x++;
+            messageIndex++;
             checkNewMessage();
         }
     } else{
-        x = 0;
+        messageIndex = 0;
     }
 }
- //TODO in place message box als newMessage een lege string is heel dat ding verwijderen
- //ook in picture
 
-function checkNewPicture(photoFrameID, index){
-    newPicture = document.getElementsByClassName('picture-facebook')[index].innerHTML;
-    newPicture = newPicture.replace('amp;amp;','');
-    console.log(newPicture);
-    //"https://fbcdn-sphotos-c-a.akamaihd.net/hphotos-ak-xft1/v/t1.0-9/10660283_865921100147683_8777487066525882489_n.jpg?oh=0fa6e12d9d303c83e43156efa4486a22&oe=55F165D3&__gda__=1438981977_48d0a01d9413501113336d4ba2839d97"
+function filterLink(link){
+    var linkUnfiltered = link.includes('&amp;');
+    var counter = 0;
+    while(linkUnfiltered){
+        if(counter > 200){
+            //deze shit gaat later weg, als het blijkt dat deze functie waterdicht werkt :P
+            console.log('HELP ME, IM STUCK IN A WHILE LOOP');
+        }
+        link = link.replace('&amp;', '&');
+        linkUnfiltered = link.includes('&amp;');
+        counter++;
+    }
+    return link;
+}
+
+function checkNewPicture(photoFrameID){
+    var index = parseInt( photoFrameID.replace("#photoFrame", "") );
+    var newPicture = document.getElementsByClassName('picture-facebook')[index].innerHTML; 
+    newPicture = filterLink(newPicture);
     if(newPicture != ""){
         placePicture(photoFrameID, newPicture); 
     } else {
-        //remove!
+        var queryPictureID = photoFrameID + 'Picture';
+        $(queryPictureID).remove();
     }
 }
 
@@ -661,7 +660,6 @@ var heldKeys = {};
 
 window.onkeydown = function(event) {
     if(event.keyCode==32){
-    console.log("space"); //space bar
         showSaved();
     } else if (event.keyCode==86){ //v
         saved = false;
@@ -679,18 +677,17 @@ window.onkeydown = function(event) {
           recognition.start();
           ignore_onend = false;
           start_timestamp = event.timeStamp;
-        console.log("down");
+          console.log("down");
     }
-    //else if(event.keyCode==73){ // i van image
-    //    placePicture("#photoFrame0", "https://fbcdn-sphotos-c-a.akamaihd.net/hphotos-ak-xft1/v/t1.0-9/10660283_865921100147683_8777487066525882489_n.jpg?oh=0fa6e12d9d303c83e43156efa4486a22&oe=55F165D3&__gda__=1438981977_48d0a01d9413501113336d4ba2839d97");
-    //}
 };
 
 window.onkeyup = function(event) {
-    lastEvent = null;
-    delete heldKeys[event.keyCode];
-    console.log('up');
-    recognition.stop();
+    if (event.keyCode == 77) {
+        lastEvent = null;
+        delete heldKeys[event.keyCode];
+        console.log('up');
+        recognition.stop();
+    }
 };
 
 
@@ -741,12 +738,11 @@ $(".friends.index").ready(function(){
         else {
             console.log("gettin it");
             $.get("/friends/refresh_part.js", function(data){
-            $("#partial_for_friend_and_message").html(data);
-        },
-    "html");
+                $("#partial_for_friend_and_message").html(data);
+            },"html");
         }
-    }, 20000);
-    
+    }, 5000);
+
     var vid = document.getElementById('videoel');
     var overlay = document.getElementById('overlay');
     var overlayCC = overlay.getContext('2d');
@@ -803,11 +799,11 @@ $(".friends.index").ready(function(){
         // start tracking
         ctrack.start(vid);
         // start loop to draw face
-        drawLoop();
+        //drawLoop();
     }
     
-    function drawLoop() {
-        //console.log("DRAWING");
+   /* function drawLoop() {
+        console.log("DRAWING");
         requestAnimFrame(drawLoop);
         overlayCC.clearRect(0, 0, 400, 300);
         //psrElement.innerHTML = "score :" + ctrack.getScore().toFixed(4);
@@ -818,6 +814,7 @@ $(".friends.index").ready(function(){
         
         var er = ec.meanPredict(cp);
     }
+    */ 
     
     var ec = new emotionClassifier();
     ec.init(emotionModel);
@@ -830,7 +827,7 @@ $(".friends.index").ready(function(){
         if (happyval > sadval && happyval > surprisedval && happyval > angryval && happyval > 50){
             //  TO DO: display like on wall
             $.get("/friends/like_part.js", "html");
-            console.log("yes");
+            console.log("Like!");
 
             }   
 

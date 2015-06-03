@@ -8,6 +8,15 @@
     src: url('/assets/NHaasBold.ttf');
 }
 
+@font-face {
+    font-family: NHaasLight;
+    src: url('/assets/NHaasLight.ttf');
+}
+
+.alert {
+	margin-bottom: 0 !important;
+}
+
 .static_pages #head-image {
 	background: url("background.jpg");
 	height: 70vh;
@@ -82,8 +91,21 @@
 		margin-top: 0px;
 		margin-bottom: 0px;
 	}
+	&.footer {
+		border-top: 15px solid #999999;
+		background: #E0E0E0;
+		height: 200px;
+		margin-bottom: 0px;
+	}
 }
 
+.footer-text {
+	text-align: center;
+	color: black;
+	font-family: NHaasLight;
+	font-size: 1.2em;
+	margin-top: 90px;
+}
 
 .butts{
 	display: inline-block;
@@ -114,6 +136,29 @@
 		background-color: #9F87AF;
 	}
 }
+
+#facebook-link {
+	color: black;
+	font-size: 1em;
+	&:focus{
+		text-decoration: underline;
+	}
+}
+
+
+#send-link {
+	background: #EBF2F2;
+	width: 100%;
+	height: 50px !important;
+	font-family: NHaasBold;
+	text-align: center !important;
+	font-size: 24px;
+	border: 6px solid #7CC1E0;
+	color: #1D1F21;
+}
+
+
+
 
 
 /*

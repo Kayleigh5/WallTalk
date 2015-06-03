@@ -1,4 +1,0 @@
-<% a = current_user.facebook.get_object("me/home?fields=from,message,status_type&limit=50") %>
-<% choices = a.select { |key, value| key.to_s.match('Kayleigh Beard') } %>
-<%= nested_hash_values(choices, "message") %>
-<%= current_user.facebook.get_object("me/friends") %>

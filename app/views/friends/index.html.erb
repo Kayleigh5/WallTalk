@@ -1,22 +1,20 @@
+<!-- Facial recognition -->
 <div id="content">
 	<input class="btn" type="button" value="wait, loading video" disabled="disabled" onclick="" id="startbutton"></input>
-
 	<div id="container">
 		<video id="videoel" width="400" height="300" preload="auto" loop>
 		</video>
 		<canvas id="overlay" width="400" height="300"></canvas>
 	</div>
-	
 	<canvas id="sketch" width="400" height="300"></canvas>
-
 </div>
 
-<p id="num"><%= current_user.friends.count %></p>
-
-<div id="initializeDiv"></div>
-
-<div id="partial_for_friend_and_message"></div>
-
-</div>
-
+<!-- Projection Initializer -->
+<% if !current_user %>
+	<%= link_to "Register for application", '/signout', id: "sign_out" %>
+<% else %>
+	<p id="num"><%= current_user.friends.count %></p>
+	<div id="initializeDiv"></div>
+	<div id="partial_for_friend_and_message"></div>
+<% end %>
 

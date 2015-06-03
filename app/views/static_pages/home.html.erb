@@ -1,3 +1,7 @@
+<% flash.each do |key, value| %>
+        <div class="alert alert-<%= key %>"><%= value %></div>
+      <% end %>
+
 <div id="head-image" class="fullscreen">
 	<div class="text-vcenter">
 		<h1 class="head-text">WallTalk connects <br>grandparents &amp; (grand)children.</h1>
@@ -29,7 +33,7 @@
 	<div class="col-lg-6 col-md-6 col-sm-6 col-lg-offset-3 col-md-offset-3 col-sm-offset-3">
 		<p class="step-number">1.</p>
 		<p class="step-paragraph">
-			Make an account for your grandparent on Facebook.
+			Make an account for your grandparent on	<a id="facebook-link" href="https://www.facebook.com" target="_blank" class="sign_out">Facebook</a>.</p>
 		</p>
 	</div>
 </div>
@@ -39,21 +43,30 @@
 	<div class="col-lg-6 col-md-6 col-sm-6 col-lg-offset-3 col-md-offset-3 col-sm-offset-3">
 		<p class="step-number uneven">2.</p>
 		<p class="step-paragraph uneven">
-			Become friends with your grandparent on Facebook, and make sure all other grandchildren
-			become friends with your grandparent too :)
+			Become friends with your grandparent on Facebook, and make sure all other grandchildren become friends with your grandparent too :)
 		</p>
 	</div>
 </div>
 
-
+<%= content_tag(:a, '', :name => 'grandkid') %> 
 <div class="row steps">
 	<div class="col-lg-6 col-md-6 col-sm-6 col-lg-offset-3 col-md-offset-3 col-sm-offset-3">
 		<p class="step-number">3.</p>
+					
 		<p class="step-paragraph">
-			Ask all grandchildren to sign up for WallTalk!
-		</p>
-		<p class="button-url"><a class="butts" href="static_pages/step1" role="button">Sign up as (grand)child</a>
-		</p>
+			Ask all grandchildren to sign up for WallTalk! Just send them this link:</p>
+			<textarea id="send-link">https://localhost:3000/signup</textarea>
+		
+		
+		<% if params[:signed_in_type] == 'grandkid_sign' %>
+			<p class="step-paragraph">Signed up <%= current_user.name %>! Want to sign up another grandchild? </p>
+			<p class="button-url"><%= link_to "Sign up another grandkid", '/signup_grandkid', class: "butts sign_out" %></p>
+		<% else %>
+			<p class="step-paragraph">
+				Or click the button below!
+				<p class="button-url"><%= link_to "Sign up grandkid", '/signup_grandkid', class: "butts" %></p>	
+			</p>
+		<% end %> 	
 	</div>
 </div>
 
@@ -61,10 +74,45 @@
 	<div class="col-lg-6 col-md-6 col-sm-6 col-lg-offset-3 col-md-offset-3 col-sm-offset-3">
 		<p class="step-number uneven">4.</p>
 		<p class="step-paragraph uneven">
-			Now sign up your grandparent for WallTalk, and the fun can begin!
+			Now sign your grandparent in for WallTalk, and the fun can begin!
 		</p>
-		<p class="button-url"><a class="butts purple" href="static_pages/step1" role="button">Sign up as grandparent</a></p>
+		<p class="button-url"><%= link_to "Sign in grandparent", '/signup_grandparent', class: "butts purple sign_out" %></p>
 		</p>
 	</div>
 </div>
+
+<div class=" row footer">
+	<div class="col-lg-6 col-md-6 col-sm-6 col-lg-offset-3 col-md-offset-3 col-sm-offset-3">
+		<p class="footer-text">2015 - Kayleigh Beard &amp; Nathalie Post</p> 
+	</div>
+</div>
+
+
+<script type="text/javascript">
+    var textBox = document.getElementById("send-link");
+    textBox.onfocus = function() {
+        textBox.select();
+
+        // Work around Chrome's little problem
+        textBox.onmouseup = function() {
+            // Prevent further mouseup intervention
+            textBox.onmouseup = null;
+            return false;
+        };
+    };
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -18,7 +18,7 @@
 }
 
 .static_pages #head-image {
-	background-image: image-url('background.jpg');
+	background-image: asset-data-url('background.jpg');
 	height: 70vh;
 }
 

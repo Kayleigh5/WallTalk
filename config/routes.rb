@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   get 'static_pages/home'
+  get 'static_pages/usechrome'
   get 'friends/index'
   get 'friends/refresh_part'
   post 'friends/like_message'

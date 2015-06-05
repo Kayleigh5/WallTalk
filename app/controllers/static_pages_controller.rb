@@ -2,16 +2,7 @@ class StaticPagesController < ApplicationController
   def home
   end
 
-  def step1
+  def usechrome
   end
-
-  def step2
-  end
-
-  def step3
-  end
-
-def login
-end
 
 end

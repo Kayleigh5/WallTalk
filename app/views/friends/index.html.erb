@@ -11,7 +11,16 @@
 
 <!-- Projection Initializer -->
 <% if !current_user %>
-	<%= link_to "Register for application", '/signout', id: "sign_out" %>
+	
+	<div class="fullscreen">
+		<div class="row text-vcenter">
+	<div class="col-lg-6 col-md-6 col-sm-6 col-lg-offset-3 col-md-offset-3 col-sm-offset-3">
+		<h1 class="head-textchrome"><%= link_to "Register for application or sign in", '/static_pages/home#grandparent', id: 'register-link' %></h1>
+	</div>
+</div>
+
+
+	
 <% else %>
 	<p id="num"><%= current_user.friends.count %></p>
 	<div id="initializeDiv"></div>

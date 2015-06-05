@@ -2,12 +2,14 @@
 	<% @current_user.friends.each do |friend| %>
 		<p class="friend-name"><%= friend.name %></p>		
 		<% @content = determine_if_latest_picture_or_message("#{friend.uid}") %>
-		<% if @content[1].nil? %>
-			<p class="message-facebook"><%= @content[0] %></p>
+		<% if @content[2].nil? %>
+		<% dateJava = @content[0].to_f * 1000 %>
+			<p class="message-facebook" id="<%= dateJava %>"><%= @content[1] %></p>
 			<p class="picture-facebook"></p>
 		<% else %>
-			<p class="message-facebook"><%= @content[0] %></p>
-			<p class="picture-facebook"><%= @content[1] %></p>
+		<% dateJava = @content[0].to_f * 1000 %>
+			<p class="message-facebook" id="<%= dateJava %>"><%= @content[1] %></p>
+			<p class="picture-facebook"><%= @content[2] %></p>
 		<% end %>
 	<% end %>
 <% end %>

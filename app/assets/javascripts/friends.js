@@ -4,13 +4,27 @@
 var numberOfGrandChildren = 0;
 var saved = false; //save wall initialization
 var allowFacebook = false; //to allow facebook messages to come in
-var globalFrameIDNewMessage = "";
-var globalNewMessage = "";
+var globalFrameID = "";
+var previousGlobalFrameID = "";
 var oldMessage = [];
 var timesDivInserted = 0;
 var timesMessageAdjusted = 0;
 var timesPictureAdjusted = 0;
 var messageIndex = 0;
+var likeStatuses = [];
+var lastTry = 0;
+
+if( !window.chrome){
+     var windowLocation = window.location;
+     windowLocation = windowLocation.toString();
+    if (!windowLocation.contains('/static_pages/usechrome.html')) {
+        window.location = '/static_pages/usechrome.html';
+    }
+}
+
+String.prototype.contains = function(it) { 
+        return this.indexOf(it) != -1; 
+    };
 
 function begin(){
     if(timesDivInserted == 0){
@@ -34,17 +48,34 @@ Array.prototype.remove = function() {
 
 
 function insertDiv(){
+    var widestName = 0;
     for(i=0; i<numberOfGrandChildren; i++){
         var name = document.getElementsByClassName('friend-name')[i].innerHTML;
-
-        var divHTML = "<div class='photoFrame' id='photoFrame" + i + "'><p class = 'name'>"+name+"</p><div class='slider'></div></div>";
+        var divHTML = "<div class='photoFrame' id='photoFrame" + i + "'><p class = 'name'>"+name+"</p><div class='sliderBorder'></div><div class='sliderRotate'></div></div>";
         $(divHTML).insertAfter("#initializeDiv");
+        var nameWidth = getTextWidth(name, parseInt($('.name').css('font-family')), parseInt($('.name').css('font-size')));
+        if(nameWidth > widestName){
+            widestName = nameWidth;
+        }
     }
+    $('.photoFrame').css('width', widestName + parseInt($('.photoFrame').css('border-width')));
 
-    $( ".slider" ).slider();
-    $('.slider').on( "slide", function( event, ui ) {
+    $( ".sliderBorder" ).slider();
+    $('.sliderBorder').on( "slide", function( event, ui ) {
         var value = ui.value;
         $(this).parent().css('border-width', value); 
+    });
+
+    $( ".sliderRotate" ).slider({
+        min: -10,
+        max: 10,
+        value: 0
+    });
+    $('.sliderRotate').on( "slide", function( event, ui ) {
+        var value = ui.value;
+        var rotation = "rotate(" + value + "deg)"; //rotate(7deg);
+        console.log(rotation);
+        $(this).parent().css('-webkit-transform', rotation);
     });
     
     $("#initializeDiv").remove();
@@ -62,18 +93,24 @@ function insertDiv(){
 function fadeOutInitializers(){
     // The initializer handles are made invisible for the facebook message animation to begin
     $(".name").css("opacity" , "0");
-    $(".photoFrame").css("border-color" , "black");
-    $(".slider").css("opacity" , "0");
-    $(".photoFrame").css("resize", "none");
+    $(".sliderBorder").css("opacity" , "0");
+    $(".sliderRotate").css("opacity" , "0");
+    $(".photoFrame").css({
+        "border-color" : "black",
+        "resize" : "none"
+    });
 }
  
 function returnInitializers(){
     // When you want to adjust the initializing step
     $(".name").css("opacity" , "1");
-    $(".photoFrame").css("border-color" , "white");
-    $(".slider").css("opacity" , "1");
-    $(".photoFrame").css("resize", "both");
+    $(".sliderBorder").css("opacity" , "1");
+    $(".sliderRotate").css("opacity" , "1");
     $( ".photoFrame" ).draggable('enable');
+    $(".photoFrame").css({
+        "border-color" : "white",
+        "resize" : "both"
+    });
     cursorGrab(".photoFrame");
 }
  
@@ -175,35 +212,57 @@ function isEven(x) {
 
 function adjustMessageBox(queryMessageContainerID, queryMessageID, queryMessageIDinside, widestWord){
     timesMessageAdjusted++;
-    
-    if(!isEven(timesMessageAdjusted)){
-        console.log('uneven');
-        if(widestWord >= $(queryMessageIDinside).width()/1.1){
+    var resizeFactor = 1.1;
+    if(!isEven(timesMessageAdjusted)){        
+        //console.log('uneven WW: ' + widestWord);
+        //console.log('uneven inside: ' + $(queryMessageIDinside).width()/resizeFactor);
+
+        if(lastTry == 0){
+            if(widestWord <= $(queryMessageIDinside).width()/resizeFactor){
             //the width may only become smaller if there is no word wider than the width (we don't want a sideway overflow)
-            //TODO: HIJ DOET HET NIET HELEMAAL GOED
-            $(queryMessageID).css('width', $(queryMessageID).width()/1.1);
+            //console.log('adjust width');
+            $(queryMessageID).css('width', $(queryMessageID).width()/resizeFactor);
             $(queryMessageIDinside).css('width', $(queryMessageID).width());
             $(queryMessageContainerID).css('width', $(queryMessageID).width()+ 2*distanceText);
-        } else {
-            timesMessageAdjusted++;
-        }
+            } else {
+                timesMessageAdjusted++;
+            }
+        }        
     } 
 
     if(isEven(timesMessageAdjusted)) {
-        console.log('even');  
+        //console.log('adjust height...'); 
 
-        $(queryMessageID).css('height', $(queryMessageID).height()/1.1);  
-        console.log('height: ' + $(queryMessageID).height());
-        console.log('fontheight: ' + parseInt($(queryMessageIDinside).css('font-size')));
-        if( $(queryMessageID).height() >= parseInt(  $(queryMessageIDinside).css('font-size')  ) *1.5){            
+        $(queryMessageID).css('height', $(queryMessageID).height()/resizeFactor);  
+        //console.log('height: ' + $(queryMessageID).height());
+        //console.log('fontheight: ' + parseInt($(queryMessageIDinside).css('font-size')));
+        if( $(queryMessageID).height() >= parseInt(  $(queryMessageIDinside).css('font-size')  ) *resizeFactor){            
             $(queryMessageContainerID).css('height',  $(queryMessageID).height() + 2*distanceText);
-        } else {
-            console.log('height too small');
+            //console.log('...and height');
+        } else if( $(queryMessageContainerID).width() < $(window).width()){ 
+            //console.log('...and width bigger*resizeFactor (height too small)');
             //if the container is smaller than the size of the letters, it is unreadable
-            $(queryMessageID).css('height', parseInt($(queryMessageIDinside).css('font-size')) *1.5);
+            $(queryMessageID).css('height', parseInt($(queryMessageIDinside).css('font-size')) *resizeFactor);
             $(queryMessageContainerID).css('height', $(queryMessageID).height() + 2*distanceText);
-            $(queryMessageID).css('width',  $(queryMessageID).width()*2);
+            $(queryMessageID).css('width',  $(queryMessageID).width()*resizeFactor);
             $(queryMessageIDinside).css('width', $(queryMessageID).width());
+            $(queryMessageContainerID).css('width', $(queryMessageID).width() + 2*distanceText);            
+        } else {
+            //try two times a high and small messagebox
+            console.log('last try!');
+            lastTry++;
+            if(lastTry < 2){
+                $(queryMessageIDinside).css('width', $(queryMessageIDinside).width() / 4);
+                $(queryMessageID).css('width', $(queryMessageIDinside).width());
+                $(queryMessageContainerID).css('width', $(queryMessageID).width() + 2*distanceText);     
+                $(queryMessageID).css('height', $(queryMessageID).height()*4);
+                $(queryMessageContainerID).css('height', $(queryMessageID).height() + 2*distanceText);
+
+            } else {
+                //stop because there's no place for the message box
+                lastTry = 0;
+                timesMessageAdjusted = 1000;
+            }
         }
     }
     return "done";
@@ -237,10 +296,12 @@ function tryPositions(photoFrameID, queryObjectID){
     var side = "leftTop";
     var marginTop = $(photoFrameID).offset().top - $(queryObjectID).height()-distancePhotoFrame;
     var marginLeft = $(photoFrameID).offset().left - $(queryObjectID).width()-distancePhotoFrame;   
-    $(queryObjectID).css('margin-top', marginTop);
-    $(queryObjectID).css('margin-left', marginLeft);
+    $(queryObjectID).css({
+        'margin-top' : marginTop,
+        'margin-left' : marginLeft
+    });
 
-    if(timesMessageAdjusted > 100 || timesPictureAdjusted > 100){
+    if(timesMessageAdjusted > 400 || timesPictureAdjusted > 400){
         return "error";
     }
 
@@ -253,8 +314,10 @@ function tryPositions(photoFrameID, queryObjectID){
         side = "rightTop";
         marginTop = $(photoFrameID).offset().top - $(queryObjectID).height() - distancePhotoFrame;
         marginLeft = $(photoFrameID).offset().left + $(photoFrameID).width() + parseInt($(photoFrameID).css("border-bottom-width"))*2+distancePhotoFrame;       
-        $(queryObjectID).css('margin-top', marginTop);
-        $(queryObjectID).css('margin-left', marginLeft);
+        $(queryObjectID).css({
+            'margin-top' : marginTop,
+            'margin-left' : marginLeft
+        });
         
         //make message container visible if it's in the right place, else try another position
         if(rightPlace(queryObjectID)){
@@ -265,8 +328,10 @@ function tryPositions(photoFrameID, queryObjectID){
             side = "rightBottom";
             marginTop = $(photoFrameID).offset().top + $(photoFrameID).height() + parseInt($(photoFrameID).css("border-bottom-width"))*2+distancePhotoFrame;
             marginLeft = $(photoFrameID).offset().left + $(photoFrameID).width() + parseInt($(photoFrameID).css("border-bottom-width"))*2+distancePhotoFrame;       
-            $(queryObjectID).css('margin-top', marginTop);
-            $(queryObjectID).css('margin-left', marginLeft);
+            $(queryObjectID).css({
+                'margin-top' : marginTop,
+                'margin-left' : marginLeft
+            });
             
             //make message container visible if it's in the right place, else try another position
             if(rightPlace(queryObjectID)){
@@ -277,8 +342,10 @@ function tryPositions(photoFrameID, queryObjectID){
                 side = "leftBottom";
                 marginTop = $(photoFrameID).offset().top + $(photoFrameID).height() + parseInt($(photoFrameID).css("border-bottom-width"))*2+distancePhotoFrame;
                 marginLeft = $(photoFrameID).offset().left - $(queryObjectID).width() -distancePhotoFrame;  
-                $(queryObjectID).css('margin-top', marginTop);
-                $(queryObjectID).css('margin-left', marginLeft);
+                $(queryObjectID).css({
+                    'margin-top' : marginTop,
+                    'margin-left' : marginLeft
+                });
                 
                 //make message container visible if it's in the right place, else try another size and positions
                 if(rightPlace(queryObjectID)){
@@ -292,10 +359,8 @@ function tryPositions(photoFrameID, queryObjectID){
     return side;
 }
 
-function placeMessageBox(photoFrameID, message){
-    //console.log("place for the " + timesMessageAdjusted + " time");
-    // get a message and calculate size
-    console.log('place message: ' + message);
+function placeMessageBox(photoFrameID, message, widestWord){
+
     var messageSplit = message.split("");
     var numberOfCharacters = messageSplit.length;
     
@@ -331,39 +396,39 @@ function placeMessageBox(photoFrameID, message){
         //height of container div becomes height of text <p>
         var wordSplit = message.split(" ");
         var addWordLength = 0;
-        var widestWord = 0;
-        var thaword = "";
-        //TODO dit wordt opgeschoond zodra het werkt. Bij okeeeeeeeeee gaat het fout
 
         for(word = 0; word < wordSplit.length; word++){
             var widthOfWordInDom = getTextWidth(wordSplit[word], $('.messageInside').css('font-family'), $('.message').css('font-size'));
             //console.log('word: '+ wordSplit[word]);
             //console.log('message id inside width: ' + $(queryMessageIDinside).width());
-            console.log('widthofwordindom: '+ widthOfWordInDom);
+            //console.log('widthofwordindom: '+ widthOfWordInDom);
             
             if(widthOfWordInDom > widestWord){
                 //console.log(messageID + ' word is bigger');
                 widestWord = widthOfWordInDom;
-                thaword = wordSplit[word];
             }
         }
-        console.log('widest word: ' + widestWord);
-        console.log('tha word: ' + widestWord);
 
         if(widestWord > $(queryMessageIDinside).width() ){
             addWordLength = widestWord - $(queryMessageIDinside).width();
         }
         
-        console.log('length of word "' + thaword + '" is: ' + widestWord);
+        //console.log('length of word "' + thaword + '" is: ' + widestWord);
 
         //console.log('addWordLength: ' + addWordLength);
         $(queryMessageIDinside).css('width', $(queryMessageIDinside).width() + addWordLength);
-        $(queryMessageID).css('width', $(queryMessageIDinside).width());
-        $(queryMessageID).css('height', $(queryMessageIDinside).height());
-        $(queryMessageContainerID).css('width', $(queryMessageID).width() + distanceText*2);
-        $(queryMessageContainerID).css('height', $(queryMessageID).height() + distanceText*2);
-        $(queryMessageID).css('margin-top', distanceText);
-        $(queryMessageID).css('margin-left', distanceText);
+        $(queryMessageID).css({
+            'width' : $(queryMessageIDinside).width(),
+            'height': $(queryMessageIDinside).height()
+        });
+        $(queryMessageContainerID).css({
+            'width' : $(queryMessageID).width() + distanceText*2 ,
+            'height': $(queryMessageID).height() + distanceText*2
+        });
+        $(queryMessageID).css({
+            'margin-top' : distanceText,
+            'margin-left': distanceText
+        });
 
     }
 
@@ -372,17 +437,28 @@ function placeMessageBox(photoFrameID, message){
     //console.log('timesMessageAdjusted: ' + timesMessageAdjusted);
 
     if(side == "again"){
+        //box not placed because needs to be resized
         var status = adjustMessageBox(queryMessageContainerID, queryMessageID, queryMessageIDinside, widestWord);
         if(status == 'done'){
-            placeMessageBox(photoFrameID, message);
+            placeMessageBox(photoFrameID, message, widestWord);
         }
+        //@@NEW deze elseif verplaatsen
+    } else if(side == "error"){
+        //box not placed because too many tries
+        console.log('too many tries message -> not placed');
+        globalFrameID = previousGlobalFrameID;
+        timesMessageAdjusted = 0;
     } else if(typeof(side) == 'string' && timesMessageAdjusted > 0) {
+        //box placed in more times
+        previousGlobalFrameID = globalFrameID;
+        animateBorder(globalFrameID);
         createBorder(queryMessageContainerID, side);
         timesMessageAdjusted = 0;
         animateOverflow(queryMessageIDinside, queryMessageID);
-    } else if(side == "error"){
-        timesMessageAdjusted = 0;
-    } else{
+    }  else{
+        //box placed in 1 time! :D
+        previousGlobalFrameID = globalFrameID;
+        animateBorder(globalFrameID);
         createBorder(queryMessageContainerID, side);
         timesMessageAdjusted = 0;
     }
@@ -390,8 +466,10 @@ function placeMessageBox(photoFrameID, message){
 
 function animateBorder(photoFrameID) {        
     $(".photoFrame").not(photoFrameID).css('-webkit-animation-iteration-count', '0');
-    $(photoFrameID).css('-webkit-animation-name', 'border');
-    $(photoFrameID).css('-webkit-animation-iteration-count', 'infinite');
+    $(photoFrameID).css({
+        '-webkit-animation-name' : 'border',
+        '-webkit-animation-iteration-count' : 'infinite'
+    });
 }
 
 
@@ -428,13 +506,22 @@ function placePicture(photoFrameID, pictureLink){
         //console.log('picture ' + side);
 
         if(side == "again"){
-
+            //picture not placed, because needs to be resized
             var status = adjustPicture(queryPictureID);
             if(status == 'done'){
                 placePicture(photoFrameID, pictureLink);
             }
+        } else if (side == "error"){
+            //picture not placed, because too many tries
+            console.log('too many tries picture -> not placed');
+            globalFrameID = previousGlobalFrameID;
+            timesPictureAdjusted = 0;
         } else{
+            //picture is placed! :D
+            previousGlobalFrameID = globalFrameID ;
             createBorder(queryPictureID, side);
+            //@@NEW
+            animateBorder(globalFrameID);
             $(queryPictureID).css('opacity', '1');
             timesPictureAdjusted = 0;
         }
@@ -443,46 +530,65 @@ function placePicture(photoFrameID, pictureLink){
 
 function createBorder(queryObjectID, side){
     if(side=="leftTop"){
-        $(queryObjectID).css('border-top-left-radius', '3em');
-        $(queryObjectID).css('border-top-right-radius', '3em');
-        $(queryObjectID).css('border-bottom-right-radius', '0em');
-        $(queryObjectID).css('border-bottom-left-radius', '3em');
+        $(queryObjectID).css({
+            'border-top-left-radius' : '3em',
+            'border-top-right-radius' : '3em',
+            'border-bottom-right-radius' : '0em',
+            'border-bottom-left-radius' : '3em'
+        });
     } else if(side=="rightTop"){
-        $(queryObjectID).css('border-top-left-radius', '3em');
-        $(queryObjectID).css('border-top-right-radius', '3em');
-        $(queryObjectID).css('border-bottom-right-radius', '3em');
-        $(queryObjectID).css('border-bottom-left-radius', '0em');
+        $(queryObjectID).css({
+            'border-top-left-radius' : '3em',
+            'border-top-right-radius' : '3em',
+            'border-bottom-right-radius' : '3em',
+            'border-bottom-left-radius' : '0em'
+        });
     } else if(side=="rightBottom"){
-        $(queryObjectID).css('border-top-left-radius', '0em');
-        $(queryObjectID).css('border-top-right-radius', '3em');
-        $(queryObjectID).css('border-bottom-right-radius', '3em');
-        $(queryObjectID).css('border-bottom-left-radius', '3em');       
+        $(queryObjectID).css({
+            'border-top-left-radius' : '0em',
+            'border-top-right-radius' : '3em',
+            'border-bottom-right-radius' : '3em',
+            'border-bottom-left-radius' : '3em'
+        });      
     } else if(side=="leftBottom"){
-        $(queryObjectID).css('border-top-left-radius', '3em');
-        $(queryObjectID).css('border-top-right-radius', '0em');
-        $(queryObjectID).css('border-bottom-right-radius', '3em');
-        $(queryObjectID).css('border-bottom-left-radius', '3em');       
+        $(queryObjectID).css({
+            'border-top-left-radius' : '3em',
+            'border-top-right-radius' : '0em',
+            'border-bottom-right-radius' : '3em',
+            'border-bottom-left-radius' : '3em'
+        });       
     } else {
         console.log('could not find side and thus border');
     }
 }
 
+var latestDate = new Date(394648309130.185);
+console.log('initial date: ' + latestDate);
+
 function checkNewMessage(){
-    console.log('check');
+    console.log('check: ' + globalFrameID);
     var newMessage = "";
     var length = document.getElementsByClassName('message-facebook').length; 
+
     if(messageIndex<length){
         newMessage = document.getElementsByClassName('message-facebook')[messageIndex].innerHTML;
-        globalNewMessage = newMessage;
+        
         var photoFrameID = "#photoFrame" + messageIndex;
+        var timeStamp = new Date(parseInt(document.getElementsByClassName('message-facebook')[messageIndex].id));
+        console.log('latest date: ' + latestDate);
+        console.log('time stamp: ' + timeStamp);
         if(!!newMessage.localeCompare(oldMessage[messageIndex]) || (oldMessage[messageIndex] == undefined) || (newMessage == "")){
-            //if different or empty then place and animate
-            globalFrameIDNewMessage = photoFrameID;
-            animateBorder(photoFrameID);
+            //if different or empty then place
+            likeStatuses[messageIndex] = "unliked";
+            if(timeStamp > latestDate){
+                console.log('bigger!');
+                latestDate = timeStamp;
+                globalFrameID = photoFrameID;
+            }
             oldMessage[messageIndex] = newMessage;            
             messageIndex++;
             if(newMessage != "" ){
-                placeMessageBox(photoFrameID, newMessage); 
+                placeMessageBox(photoFrameID, newMessage,0); 
             } else {
                 var queryMessageBoxID = photoFrameID + 'messageContainer';
                 $(queryMessageBoxID).remove();
@@ -491,7 +597,7 @@ function checkNewMessage(){
         } else if(!saved){
             //enable placeMessage box in unsaved mode so that the message moves with the photoframe            
             messageIndex++;
-            placeMessageBox(photoFrameID, newMessage); 
+            placeMessageBox(photoFrameID, newMessage,0); 
             checkNewPicture(photoFrameID);
         } else {
             //check another new message
@@ -533,10 +639,10 @@ function checkNewPicture(photoFrameID){
 
 function cursorGrab(selector){
     $(selector).hover(function() {
-        $(selector).css( 'cursor', '-moz-grab' );
-        $(selector).css( 'cursor', '-moz-grabbing;' );
-        $(selector).css( 'cursor', '-webkit-grab' );
-        $(selector).css( 'cursor', '-webkit-grabbing' );
+        $(selector).css({
+            'cursor' : '-webkit-grab',
+            'cursor' : '-webkit-grabbing' 
+        });
     }, function(){
         $(selector).css( 'cursor', 'auto');
     });
@@ -549,6 +655,50 @@ function cursorNormal(selector){
         $(selector).css( 'cursor', 'auto');
     });
 
+}
+
+function showLike(){
+    var likeIndex = parseInt(globalFrameID.replace("#photoFrame", "")); 
+
+    if(likeStatuses[likeIndex] == "unliked"){
+        $('.heart').remove();
+        var divHTML = "<div class='heart'>&hearts;</div>";
+        $( globalFrameID ).prepend( divHTML );
+        var frameHeight = (1/3)* $( globalFrameID ).height();
+        var frameWidth = $( globalFrameID ).width();
+        $('.heart').css({
+            'height': frameHeight,
+            'font-size':  frameHeight,
+            'margin-top' : frameHeight,
+            '-webkit-animation-iteration-count' : '4'
+        });
+        $('.heart').css('margin-left', 0.5*frameWidth - 0.5*$('.heart').width());
+
+        var duration = ($('.heart').css('-webkit-animation-iteration-count') * parseInt($('.heart').css('-webkit-animation-duration'))) * 1000;
+        setTimeout(function(){ 
+            //console.log('remove heart');
+            $('.heart').remove();
+        }, duration);
+        likeStatuses[likeIndex] = "liked";
+    }
+}
+
+function showRecording(direction){
+    $('.recording').remove();
+    if(direction == "down"){
+        var divHTML = "<img class='recording'/>";
+        $( globalFrameID ).prepend( divHTML );
+        var frameHeight = (1/3)* $( globalFrameID ).height();
+        var frameWidth = $( globalFrameID ).width();
+        $('.recording').css({
+            'height': frameHeight,
+            'margin-top' : frameHeight,
+            '-webkit-animation-iteration-count' : 'infinite'
+        });
+        if($('.recording').width() > frameWidth){
+            $('.recording').css('width', frameWidth);
+        }
+    }
 }
 
 
@@ -589,7 +739,6 @@ if (!('webkitSpeechRecognition' in window)) {
   
   recognition.onstart = function() {
     recognizing = true;
-    // do something to let grandma know that is recording?
   };
 
   recognition.onerror = function(event) {
@@ -669,15 +818,16 @@ window.onkeydown = function(event) {
         if (lastEvent && lastEvent.keyCode == event.keyCode) {
             return;
         }
+
         lastEvent = event;
-        heldKeys[event.keyCode] = true;
-        
-          final_transcript = '';
-          recognition.lang = 'en-US';
-          recognition.start();
-          ignore_onend = false;
-          start_timestamp = event.timeStamp;
-          console.log("down");
+        heldKeys[event.keyCode] = true;        
+        final_transcript = '';
+        recognition.lang = 'en-US';
+        recognition.start();
+        ignore_onend = false;
+        start_timestamp = event.timeStamp;
+        console.log("down");
+        showRecording('down');
     }
 };
 
@@ -687,31 +837,9 @@ window.onkeyup = function(event) {
         delete heldKeys[event.keyCode];
         console.log('up');
         recognition.stop();
+        showRecording('up');
     }
 };
-
-
-/*
-function startRecording() {
-      final_transcript = '';
-      recognition.lang = 'en-US';
-      recognition.start();
-      ignore_onend = false;
-      final_span.innerHTML = '';
-      interim_span.innerHTML = '';
-      start_timestamp = event.timeStamp;
-};
-
-window.onkeydown = function(e){
-    if(e.keyCode == 81){ // q
-        startRecording();
-        console.log('start');
-    } else if (e.keyCode==87){ //w
-        console.log('stop');
-        recognition.stop();
-    } 
-}
-*/
 
 
 
@@ -799,11 +927,11 @@ $(".friends.index").ready(function(){
         // start tracking
         ctrack.start(vid);
         // start loop to draw face
-        //drawLoop();
+        drawLoop();
     }
     
-   /* function drawLoop() {
-        console.log("DRAWING");
+   function drawLoop() {
+        //console.log("DRAWING");
         requestAnimFrame(drawLoop);
         overlayCC.clearRect(0, 0, 400, 300);
         //psrElement.innerHTML = "score :" + ctrack.getScore().toFixed(4);
@@ -814,7 +942,6 @@ $(".friends.index").ready(function(){
         
         var er = ec.meanPredict(cp);
     }
-    */ 
     
     var ec = new emotionClassifier();
     ec.init(emotionModel);
@@ -826,10 +953,12 @@ $(".friends.index").ready(function(){
         var angryval = ec.getAngryValue();   
         if (happyval > sadval && happyval > surprisedval && happyval > angryval && happyval > 50){
             //  TO DO: display like on wall
-            $.get("/friends/like_part.js", "html");
-            console.log("Like!");
-
-            }   
+            if(allowFacebook){
+                $.get("/friends/like_part.js", "html");
+                console.log("Like!");
+                showLike();
+            }
+        }   
 
         ec.clearEmotions();
     }, 2000);

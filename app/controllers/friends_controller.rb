@@ -57,12 +57,12 @@ private
     @latest_time = DateTime.new.change(:offset => "+0000")
     @latest_message_id = 0
     @current_user.friends.each do |friend|
-      if determine_if_latest_picture_or_message(friend.uid)[1].nil?
+      if determine_if_latest_picture_or_message(friend.uid)[2].nil?
         @time = convert_facebook_time_to_datetime(
           current_user.facebook.get_object("#{friend.uid}/statuses?fields=updated_time&limit=1")[0]['updated_time'])      
         if @latest_time < @time
           @latest_time = @time
-          @latest_message_id = current_user.facebook.get_object("#{friend.uid}/statuses?fields=id&limit=1")[0]['id']
+          @latest_message_id = current_user.facebook.get_object("#{friend.uid}/feed?fields=updated_time,message,id&limit=1")[0]['id']
         end
       else
         @time = convert_facebook_time_to_datetime(current_user.facebook.get_object("#{friend.uid}/feed?fields=updated_time&limit=1")[0]['updated_time'])
@@ -89,9 +89,9 @@ private
     @message_latest_picture = current_user.facebook.get_object("#{friend_uid}/feed?fields=full_picture,message&limit=1")[0]['message']
 
     if @time_latest_status > @time_latest_picture # so if newest message is latest status
-      return @latest_status_message
+      return @time_latest_status, @latest_status_message
     else
-      return @message_latest_picture, @url_latest_picture
+      return @time_latest_picture, @message_latest_picture, @url_latest_picture
     end
   end
 

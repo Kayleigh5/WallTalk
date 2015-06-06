@@ -814,7 +814,7 @@ window.onkeydown = function(event) {
         saved = false;
         returnInitializers();
     }
-    else if (event.keyCode == 77) {
+    else if (event.keyCode == 71) {
         if (lastEvent && lastEvent.keyCode == event.keyCode) {
             return;
         }
@@ -832,7 +832,7 @@ window.onkeydown = function(event) {
 };
 
 window.onkeyup = function(event) {
-    if (event.keyCode == 77) {
+    if (event.keyCode == 71) {
         lastEvent = null;
         delete heldKeys[event.keyCode];
         console.log('up');

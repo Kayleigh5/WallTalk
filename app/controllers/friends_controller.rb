@@ -58,11 +58,10 @@ private
     @latest_message_id = 0
     @current_user.friends.each do |friend|
       if determine_if_latest_picture_or_message(friend.uid)[2].nil?
-        @time = convert_facebook_time_to_datetime(
-          current_user.facebook.get_object("#{friend.uid}/statuses?fields=updated_time&limit=1")[0]['updated_time'])      
+        @time = convert_facebook_time_to_datetime(current_user.facebook.get_object("#{friend.uid}/feed?filter=app_2915120374&fields=updated_time&limit=1")[0]['updated_time'])      
         if @latest_time < @time
           @latest_time = @time
-          @latest_message_id = current_user.facebook.get_object("#{friend.uid}/statuses?fields=updated_time,message,id&limit=1")[0]['id']
+          @latest_message_id = current_user.facebook.get_object("#{friend.uid}/feed?filter=app_2915120374&fields=updated_time,message,id&limit=1")[0]['id']
         end
       else
         @time = convert_facebook_time_to_datetime(current_user.facebook.get_object("#{friend.uid}/feed?filter=app_2305272732&fields=updated_time&limit=1")[0]['updated_time'])
@@ -78,10 +77,9 @@ private
   def determine_if_latest_picture_or_message(friend_uid)
     @current_user = current_user
     
-    @time_latest_status = convert_facebook_time_to_datetime(
-        current_user.facebook.get_object("#{friend_uid}/statuses?fields=updated_time&limit=1")[0]['updated_time'])
+    @time_latest_status = convert_facebook_time_to_datetime(current_user.facebook.get_object("#{friend_uid}/feed?filter=app_2915120374&fields=updated_time&limit=1")[0]['updated_time'])
     
-    @latest_status_message = current_user.facebook.get_object("#{friend_uid}/statuses?fields=message&limit=1")[0]['message']
+    @latest_status_message = current_user.facebook.get_object("#{friend_uid}/feed?filter=app_2915120374&fields=message&limit=1")[0]['message']
     
     @time_latest_picture = convert_facebook_time_to_datetime(current_user.facebook.get_object("#{friend_uid}/feed?filter=app_2305272732&fields=full_picture,updated_time&limit=1")[0]['updated_time'])
 

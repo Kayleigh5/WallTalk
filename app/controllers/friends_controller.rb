@@ -62,13 +62,13 @@ private
           current_user.facebook.get_object("#{friend.uid}/statuses?fields=updated_time&limit=1")[0]['updated_time'])      
         if @latest_time < @time
           @latest_time = @time
-          @latest_message_id = current_user.facebook.get_object("#{friend.uid}/feed?fields=updated_time,message,id&limit=1")[0]['id']
+          @latest_message_id = current_user.facebook.get_object("#{friend.uid}/statuses?fields=updated_time,message,id&limit=1")[0]['id']
         end
       else
-        @time = convert_facebook_time_to_datetime(current_user.facebook.get_object("#{friend.uid}/feed?fields=updated_time&limit=1")[0]['updated_time'])
+        @time = convert_facebook_time_to_datetime(current_user.facebook.get_object("#{friend.uid}/feed?filter=app_2305272732&fields=updated_time&limit=1")[0]['updated_time'])
         if @latest_time < @time
           @latest_time = @time
-          @latest_message_id = current_user.facebook.get_object("#{friend.uid}/feed?fields=id&limit=1")[0]['id']
+          @latest_message_id = current_user.facebook.get_object("#{friend.uid}/feed?filter=app_2305272732&fields=id&limit=1")[0]['id']
         end
       end
     end
@@ -83,10 +83,10 @@ private
     
     @latest_status_message = current_user.facebook.get_object("#{friend_uid}/statuses?fields=message&limit=1")[0]['message']
     
-    @time_latest_picture = convert_facebook_time_to_datetime(current_user.facebook.get_object("#{friend_uid}/feed?fields=full_picture,updated_time&limit=1")[0]['updated_time'])
+    @time_latest_picture = convert_facebook_time_to_datetime(current_user.facebook.get_object("#{friend_uid}/feed?filter=app_2305272732&fields=full_picture,updated_time&limit=1")[0]['updated_time'])
 
-    @url_latest_picture = current_user.facebook.get_object("#{friend_uid}/feed?fields=full_picture&redirect=false&limit=1")[0]['full_picture']
-    @message_latest_picture = current_user.facebook.get_object("#{friend_uid}/feed?fields=full_picture,message&limit=1")[0]['message']
+    @url_latest_picture = current_user.facebook.get_object("#{friend_uid}/feed?filter=app_2305272732&fields=full_picture&redirect=false&limit=1")[0]['full_picture']
+    @message_latest_picture = current_user.facebook.get_object("#{friend_uid}/feed?filter=app_2305272732&fields=full_picture,message&limit=1")[0]['message']
 
     if @time_latest_status > @time_latest_picture # so if newest message is latest status
       return @time_latest_status, @latest_status_message
